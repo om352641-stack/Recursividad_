@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Introducción a la recursividad para Estructura de Datos, con algoritmos explicados y ejemplos de código Java.">
+  <meta name="theme-color" content="#101526">
+  <title>Recursividad — pensar en pequeño para resolver en grande</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101526;
+      --surface: #171e32;
+      --surface-2: #1e2740;
+      --text: #f2f4fb;
+      --muted: #aab4cb;
+      --line: #303b57;
+      --cyan: #68e1dc;
+      --violet: #b7a2ff;
+      --lime: #c5ef8b;
+      --orange: #ffbd7a;
+      --radius: 22px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.65; }
+    a { color: var(--cyan); }
+    a:hover { color: #b1fffb; }
+    button, input { font: inherit; }
+    button {
+      border: 0; border-radius: 12px; padding: .72rem 1rem; cursor: pointer;
+      color: #101526; background: var(--cyan); font-weight: 750;
+      transition: transform .18s ease, filter .18s ease;
+    }
+    button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+    button.secondary { color: var(--text); background: #303b57; }
+    button:disabled { cursor: not-allowed; opacity: .45; transform: none; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+    .topbar { position: sticky; top: 0; z-index: 10; background: rgb(16 21 38 / 88%); border-bottom: 1px solid rgb(255 255 255 / 8%); backdrop-filter: blur(14px); }
+    .nav { display: flex; align-items: center; justify-content: space-between; min-height: 68px; gap: 20px; }
+    .brand { color: var(--text); font-weight: 850; text-decoration: none; letter-spacing: -.04em; }
+    .brand span { color: var(--cyan); }
+    .skip-link { position: absolute; top: 8px; left: 8px; z-index: 20; padding: 9px 13px; transform: translateY(-160%); border-radius: 10px; color: #101526; background: var(--cyan); font-weight: 800; }
+    .skip-link:focus { transform: translateY(0); }
+    .navlinks { display: flex; gap: 18px; overflow-x: auto; white-space: nowrap; }
+    .navlinks a { color: var(--muted); font-size: .88rem; text-decoration: none; }
+    .navlinks a:hover { color: var(--text); }
+    .button-link { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: .72rem 1rem; border-radius: 12px; color: #101526; background: var(--cyan); font-weight: 750; text-decoration: none; transition: transform .18s ease, filter .18s ease; }
+    .button-link:hover { color: #101526; transform: translateY(-2px); filter: brightness(1.08); }
+    .button-link.secondary { color: var(--text); background: #303b57; }
+    .hero { position: relative; overflow: hidden; padding: 88px 0 72px; }
+    .hero::before, .hero::after { position: absolute; content: ""; border-radius: 50%; filter: blur(2px); pointer-events: none; }
+    .hero::before { width: 420px; height: 420px; right: -80px; top: 16px; background: radial-gradient(circle, rgb(104 225 220 / 19%), transparent 68%); }
+    .hero::after { width: 360px; height: 360px; left: -180px; bottom: -190px; background: radial-gradient(circle, rgb(183 162 255 / 16%), transparent 68%); }
+    .hero-grid { position: relative; display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 50px; z-index: 1; }
+    .eyebrow { display: inline-flex; gap: 9px; align-items: center; color: var(--cyan); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--cyan); }
+    h1 { max-width: 700px; margin: 16px 0; font-size: clamp(2.7rem, 6vw, 5rem); line-height: 1.03; letter-spacing: -.065em; }
+    h1 em { color: var(--cyan); font-style: normal; }
+    .lead { max-width: 650px; color: var(--muted); font-size: 1.1rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .hero-art { min-height: 290px; display: grid; place-items: center; }
+    .recursion-orbit { position: relative; width: min(320px, 78vw); aspect-ratio: 1; border: 1px solid #45516f; border-radius: 50%; }
+    .recursion-orbit::before, .recursion-orbit::after { content: ""; position: absolute; border: 1px solid #45516f; border-radius: 50%; inset: 13%; }
+    .recursion-orbit::after { inset: 27%; border-color: #627294; }
+    .orbit-core { position: absolute; inset: 40%; border-radius: 50%; display: grid; place-items: center; color: #101526; background: var(--cyan); font: 800 1.4rem ui-monospace, monospace; box-shadow: 0 0 55px rgb(104 225 220 / 35%); }
+    .orbit-label { position: absolute; padding: 5px 10px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font: 700 .76rem ui-monospace, monospace; }
+    .label-a { top: 6%; left: 34%; }.label-b { right: -5%; top: 47%; }.label-c { bottom: 5%; left: 37%; }
+    section { padding: 76px 0; scroll-margin-top: 68px; }
+    section:nth-of-type(even) { background: #131a2b; }
+    .section-head { max-width: 720px; margin-bottom: 32px; }
+    .kicker { color: var(--violet); font-size: .78rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin: 8px 0 12px; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; letter-spacing: -.045em; }
+    h3 { margin: 0 0 10px; font-size: 1.15rem; }
+    p { margin: .55rem 0; }
+    .muted { color: var(--muted); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .card { padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .card p:last-child { margin-bottom: 0; }
+    .number { display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 16px; border-radius: 12px; color: #101526; background: var(--lime); font-weight: 900; }
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; padding: 17px; background: var(--surface-2); border-radius: 15px; }
+    .flow span { padding: 7px 12px; border: 1px solid #465371; border-radius: 9px; color: var(--text); font-size: .9rem; }
+    .flow b { color: var(--cyan); }
+    .callout { margin-top: 18px; padding: 16px 18px; border-left: 3px solid var(--orange); border-radius: 0 12px 12px 0; background: rgb(255 189 122 / 8%); color: var(--muted); }
+    .example { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+    .demo { padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .demo h3 { margin-bottom: 14px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 15px 0; }
+    .controls label { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+    input[type="number"] { width: 92px; padding: 9px 11px; color: var(--text); background: var(--bg); border: 1px solid #465371; border-radius: 10px; }
+    input[type="range"] { accent-color: var(--cyan); }
+    output, .result { color: var(--lime); font-weight: 800; }
+    .code { overflow-x: auto; margin: 15px 0 0; padding: 17px; border-radius: 13px; background: #0c1120; color: #dbe6ff; font: .86rem/1.75 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .code .comment { color: #8593b1; }
+    .steps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .step { padding: 5px 9px; border: 1px solid #41506e; border-radius: 8px; color: var(--muted); font: .84rem ui-monospace, monospace; }
+    .step.active { color: #101526; border-color: var(--cyan); background: var(--cyan); }
+    .chart { display: flex; align-items: end; gap: 7px; height: 174px; margin-top: 20px; padding: 12px 8px 0; border-bottom: 1px solid #53607b; }
+    .bar-wrap { flex: 1; min-width: 10px; display: flex; flex-direction: column; justify-content: end; align-items: center; height: 100%; gap: 5px; }
+    .bar { width: min(100%, 30px); min-height: 3px; border-radius: 6px 6px 0 0; background: linear-gradient(var(--violet), #7161c6); transition: height .3s ease; }
+    .bar-wrap small { color: var(--muted); font-size: .68rem; }
+    .bar-wrap .bar-value { color: var(--text); font-variant-numeric: tabular-nums; }
+    .hanoi-stage { width: 100%; overflow: hidden; margin: 12px 0; background: #0c1120; border-radius: 14px; }
+    .hanoi-stage svg { display: block; width: 100%; height: auto; }
+    .hanoi-status { color: var(--muted); font-size: .9rem; min-height: 28px; }
+    .canvas-wrap { overflow: hidden; background: #0c1120; border-radius: 14px; }
+    #fractalCanvas { display: block; width: 100%; height: auto; }
+    .complexity { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    .complexity th, .complexity td { text-align: left; vertical-align: top; padding: 12px; border-bottom: 1px solid var(--line); }
+    .complexity th { color: var(--cyan); font-size: .85rem; }
+    .complexity td { color: var(--muted); }
+    .formula { color: var(--lime); font: 1rem ui-monospace, monospace; white-space: nowrap; }
+    .members { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 24px; }
+    .member { min-height: 118px; display: grid; align-content: center; justify-items: center; padding: 14px; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+    .member b { color: var(--cyan); font-size: 1.05rem; }
+    .member span { color: var(--muted); font-size: .85rem; }
+    .references { padding-left: 1.5rem; }
+    .references li { margin: 0 0 15px; padding-left: 5px; color: var(--muted); overflow-wrap: anywhere; }
+    .references li::marker { color: var(--cyan); font-weight: 800; }
+    .references a { color: var(--cyan); }
+    .publish-steps { padding-left: 1.35rem; }
+    .publish-steps li { margin: 0 0 12px; padding-left: 5px; }
+    .publish-steps li::marker { color: var(--cyan); font-weight: 800; }
+    .publish-url { display: inline-block; margin-top: 10px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 10px; color: var(--lime); background: var(--bg); font: .92rem ui-monospace, monospace; overflow-wrap: anywhere; }
+    footer { padding: 30px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; }
+    .foot-inner { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+    @media (max-width: 800px) {
+      .hero-grid, .example { grid-template-columns: 1fr; }
+      .hero { padding-top: 62px; }
+      .hero-art { min-height: 220px; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .members { grid-template-columns: repeat(2, 1fr); }
+      .members .member:last-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .wrap { width: min(100% - 28px, 1120px); }
+      .nav { min-height: 58px; }
+      .navlinks { gap: 12px; max-width: 68vw; }
+      .navlinks a { font-size: .78rem; }
+      section { padding: 54px 0; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .card, .demo { padding: 19px; }
+      .members { grid-template-columns: 1fr 1fr; }
+      .complexity { font-size: .84rem; }
+      .complexity th, .complexity td { padding: 9px 6px; }
+    }
+    @media print {
+      :root { color-scheme: light; --bg: #fff; --surface: #fff; --surface-2: #f1f4fa; --text: #172033; --muted: #344054; --line: #ccd3df; --cyan: #087f83; --violet: #5442a8; --lime: #4c6b17; --orange: #a75208; }
+      body { color: #172033; background: white; font-size: 10pt; }
+      .topbar, .hero-actions, button, input, .navlinks { display: none !important; }
+      .hero, section { padding: 22px 0; background: white !important; break-inside: avoid; }
+      .hero-grid, .example { grid-template-columns: 1fr 1fr; }
+      .hero-art { min-height: 190px; }
+      h1 { font-size: 34pt; }
+      h2 { font-size: 22pt; }
+      .card, .demo, .member { background: white; border-color: #ccd3df; break-inside: avoid; }
+      .code { color: #172033; background: #f2f4f8; white-space: pre-wrap; }
+      .orbit-label { color: #172033; background: #f1f4fa; }
+      a { color: #075f67; }
+      .hanoi-stage, .canvas-wrap { background: #0c1120 !important; print-color-adjust: exact; }
+      footer { padding: 12px 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <nav class="nav wrap" aria-label="Navegación principal">
+      <a class="brand" href="#inicio">RECUR<span>S</span>IÓN</a>
+      <div class="navlinks">
+        <a href="#conceptos">Conceptos</a><a href="#estructuras">Estructuras</a><a href="#factorial">Factorial</a><a href="#fibonacci">Fibonacci</a>
+        <a href="#hanoi">Hanói</a><a href="#fractales">Fractales</a><a href="#referencias">Referencias</a><a href="#publicacion">Publicar</a>
+      </div>
+    </nav>
+  </header>
+  <main id="contenido">
+    <section class="hero" id="inicio">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Estructura de Datos · Java</span>
+          <h1>Resolver lo grande<br>pensando en <em>pequeño.</em></h1>
+          <p class="lead">Aprende cómo una función resuelve un problema llamándose a sí misma, qué relación tiene con la pila de ejecución y dónde aparece en listas y árboles. Sigue los ejemplos introductorios y estudia su implementación en Java.</p>
+          <div class="hero-actions">
+            <a class="button-link" href="#conceptos">Explorar el tema ↓</a>
+            <button class="secondary" type="button" onClick="window.print()">Guardar como PDF</button>
+          </div>
+        </div>
+        <div class="hero-art" role="img" aria-label="Ilustración de una función que se llama a sí misma">
+          <div class="recursion-orbit">
+            <span class="orbit-label label-a">problema(n)</span>
+            <span class="orbit-label label-b">problema(n−1)</span>
+            <span class="orbit-label label-c">caso base</span>
+            <div class="orbit-core">f(n)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="conceptos">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">01 — Fundamentos</span>
+          <h2>¿Qué es la recursividad?</h2>
+          <p class="muted">En programación, una función o método es recursivo cuando, durante su ejecución, vuelve a invocarse para resolver una versión más pequeña del mismo problema. Es una forma de diseñar algoritmos, no una estructura de datos por sí misma [1], [2].</p>
+        </div>
+        <div class="grid-3">
+          <article class="card"><div class="number">1</div><h3>Caso base</h3><p class="muted">Es la respuesta directa que detiene las llamadas. Puede haber más de un caso base. Sin uno alcanzable, el método continúa hasta causar un desbordamiento de pila.</p></article>
+          <article class="card"><div class="number">2</div><h3>Caso recursivo</h3><p class="muted">Resuelve una parte del problema y llama al método con datos más pequeños. Cada paso debe acercarse al caso base.</p></article>
+          <article class="card"><div class="number">3</div><h3>Retorno</h3><p class="muted">Cuando termina el caso base, cada llamada pendiente recibe un resultado y completa su operación.</p></article>
+        </div>
+        <div class="flow" aria-label="Pasos de una solución recursiva"><span>1. Recibir datos</span><b>→</b><span>2. Comprobar caso base</span><b>→</b><span>3. Reducir el problema</span><b>→</b><span>4. Llamarse de nuevo</span><b>→</b><span>5. Retornar resultado</span></div>
+        <div class="grid-2" style="margin-top:18px">
+          <article class="card"><h3>Recursión directa e indirecta</h3><p class="muted"><strong>Directa:</strong> un método se llama a sí mismo. <strong>Indirecta o mutua:</strong> un método A llama a B y B vuelve a llamar a A. En los dos casos, el ciclo necesita una condición que lo termine.</p></article>
+          <article class="card"><h3>¿Cómo comprobar que termina?</h3><p class="muted">Identifica una medida que disminuya en cada llamada —por ejemplo, un índice que avanza hacia el final de una lista— y verifica que llegue al caso base. Si la entrada no se reduce, la recursión puede no terminar.</p></article>
+        </div>
+        <div class="callout"><strong>Cuándo conviene.</strong> La recursividad se adapta bien a problemas definidos por versiones más pequeñas de sí mismos, como recorrer árboles, explorar laberintos o dividir un problema. Puede hacer el código más claro, pero cada llamada consume espacio en la pila; por eso conviene comparar claridad, memoria y tiempo con una solución iterativa [2], [3].</div>
+        <div class="callout"><strong>Sobre los ejemplos:</strong> los algoritmos que se explican y se pueden copiar están escritos en Java. Los controles del sitio usan JavaScript únicamente para actualizar los dibujos y resultados interactivos en el navegador.</div>
+      </div>
+    </section>
+    <section id="estructuras">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">02 — Conexión con la materia</span>
+          <h2>Recursividad y estructuras de datos</h2>
+          <p class="muted">En Estructura de Datos, la recursividad es especialmente útil cuando la forma de los datos contiene partes del mismo tipo. También permite observar cómo el programa administra las llamadas pendientes.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card"><div class="number">A</div><h3>Pila de llamadas</h3><p class="muted">Java guarda cada llamada activa en la pila de ejecución. Su marco conserva parámetros, variables locales y el punto al que debe volver. Las llamadas se retiran en orden LIFO: la última en entrar es la primera en terminar.</p></article>
+          <article class="card"><div class="number">B</div><h3>Listas enlazadas</h3><p class="muted">Cada nodo apunta al siguiente nodo. Un recorrido recursivo procesa el nodo actual y continúa desde <code>nodo.siguiente</code>; el caso base ocurre al llegar a <code>null</code>.</p></article>
+          <article class="card"><div class="number">C</div><h3>Árboles</h3><p class="muted">Cada nodo puede tener subárboles, que también son árboles. Por eso operaciones como contar nodos, buscar un valor y recorrer en preorden, inorden o postorden se expresan naturalmente con recursión.</p></article>
+        </div>
+        <div class="grid-2" style="margin-top:18px">
+          <article class="demo">
+            <h3>La pila durante factorial(3)</h3>
+            <div class="steps" aria-label="Marcos activos de la pila, del fondo a la cima">
+              <span class="step">fondo → factorial(3)</span><span class="step">factorial(2)</span>
+              <span class="step">factorial(1)</span><span class="step active">cima → factorial(0)</span>
+            </div>
+            <p class="muted">Al resolver <code>factorial(0)</code>, Java regresa por la pila: 1 → 1 × 1 → 2 × 1 → 3 × 2 = 6. Cada marco queda pendiente hasta recibir el valor de la llamada siguiente.</p>
+          </article>
+          <article class="demo">
+            <h3>Recorrer una lista enlazada en Java</h3>
+            <pre class="code">public class RecorrerLista {
+    static class Nodo {
+        int valor;
+        Nodo siguiente;
+        Nodo(int valor) { this.valor = valor; }
+    }
+
+    static void imprimir(Nodo nodo) {
+        if (nodo == null) return; // caso base
+        System.out.println(nodo.valor);
+        imprimir(nodo.siguiente);
+    }
+
+    public static void main(String[] args) {
+        Nodo primero = new Nodo(10);
+        primero.siguiente = new Nodo(20);
+        primero.siguiente.siguiente = new Nodo(30);
+        imprimir(primero);
+    }
+}</pre>
+            <p class="muted">Guarda como <code>RecorrerLista.java</code>. El parámetro avanza al nodo siguiente hasta llegar a <code>null</code>; el programa imprime 10, 20 y 30. Para n nodos, recorre cada nodo una vez: Θ(n) tiempo y Θ(n) espacio de pila.</p>
+          </article>
+        </div>
+        <div class="grid-2" style="margin-top:18px">
+          <article class="demo">
+            <h3>Recorrer un árbol binario en Java</h3>
+            <pre class="code">public class RecorrerArbol {
+    static class Nodo {
+        int dato;
+        Nodo izquierda, derecha;
+        Nodo(int dato) { this.dato = dato; }
+    }
+
+    static void preorden(Nodo nodo) {
+        if (nodo == null) return; // caso base
+        System.out.println(nodo.dato); // raíz
+        preorden(nodo.izquierda);      // subárbol izq.
+        preorden(nodo.derecha);        // subárbol der.
+    }
+
+    public static void main(String[] args) {
+        Nodo raiz = new Nodo(1);
+        raiz.izquierda = new Nodo(2);
+        raiz.derecha = new Nodo(3);
+        preorden(raiz); // imprime 1, 2, 3
+    }
+}</pre>
+            <p class="muted">Guarda como <code>RecorrerArbol.java</code>. El recorrido preorden visita primero la raíz, luego el subárbol izquierdo y por último el derecho. Al llegar a un enlace vacío (<code>null</code>), el caso base detiene esa rama.</p>
+          </article>
+          <article class="demo">
+            <h3>Leer el orden del recorrido</h3>
+            <div class="steps" aria-label="Orden de recorrido preorden">
+              <span class="step active">1 · visitar raíz</span>
+              <span class="step">2 · recorrer izquierda</span>
+              <span class="step">3 · recorrer derecha</span>
+              <span class="step">4 · regresar al padre</span>
+            </div>
+            <p class="muted">El mismo método se aplica en cada subárbol. Cuando un subárbol termina, la llamada regresa a su padre y continúa con la rama pendiente. Para un árbol con n nodos, preorden tarda Θ(n); la pila usa espacio proporcional a la altura del árbol.</p>
+          </article>
+        </div>
+        <div class="callout"><strong>Regla práctica:</strong> antes de escribir un método recursivo, define qué significa su parámetro, dónde termina, cómo se acerca a la terminación y qué resultado devuelve cada llamada.</div>
+      </div>
+    </section>
+    <section id="complejidad">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">03 — Análisis</span>
+          <h2>¿Cuánto cuesta recursar?</h2>
+          <p class="muted">El análisis suele expresar el trabajo como una recurrencia: el costo de una instancia depende del costo de instancias más pequeñas [2], [3]. También hay que contar la memoria de las llamadas pendientes en la pila.</p>
+        </div>
+        <div class="card">
+          <table class="complexity">
+            <thead><tr><th>Algoritmo</th><th>Tiempo típico</th><th>Memoria de pila</th><th>Observación</th></tr></thead>
+            <tbody>
+              <tr><td>Factorial recursivo</td><td class="formula">Θ(n)</td><td class="formula">Θ(n)</td><td>Una llamada por nivel.</td></tr>
+              <tr><td>Fibonacci ingenuo</td><td class="formula">Θ(φⁿ)</td><td class="formula">Θ(n)</td><td>φ ≈ 1.618; recalcula subproblemas.</td></tr>
+              <tr><td>Fibonacci con memoización</td><td class="formula">Θ(n)</td><td class="formula">Θ(n)</td><td>Guarda cada resultado para reutilizarlo.</td></tr>
+              <tr><td>Torres de Hanói</td><td class="formula">Θ(2ⁿ)</td><td class="formula">Θ(n)</td><td>La solución mínima requiere 2ⁿ − 1 movimientos.</td></tr>
+              <tr><td>Triángulo de Sierpiński</td><td class="formula">Θ(3ᵈ)</td><td class="formula">Θ(d)</td><td>d es la profundidad; cada nivel dibuja 3 copias.</td></tr>
+            </tbody>
+          </table>
+          <p class="muted">Las cotas describen estas implementaciones y modelos de costo; optimizaciones, representación de números y límites de la plataforma pueden cambiar el costo observado.</p>
+        </div>
+      </div>
+    </section>
+    <section id="factorial">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">04 — Ejemplo interactivo</span>
+          <h2>Factorial: una cadena de dependencias</h2>
+          <p class="muted">Para n ≥ 1, n! = n × (n − 1)!. El caso base es 0! = 1. La función reduce n hasta llegar a cero y luego multiplica los resultados al regresar.</p>
+        </div>
+        <div class="example">
+          <article class="demo">
+            <h3>Prueba el cálculo</h3>
+            <div class="controls">
+              <label for="factorialInput">n (0 a 18)
+                <input id="factorialInput" type="number" min="0" max="18" value="5">
+              </label>
+              <button id="factorialButton" type="button">Calcular</button>
+            </div>
+            <p id="factorialResult" class="result" aria-live="polite">5! = 120</p>
+            <p class="muted">Bajada y retorno de la recursión:</p>
+            <div id="factorialSteps" class="steps" aria-label="Descomposición del factorial"></div>
+          </article>
+          <article class="demo">
+            <h3>Programa de ejemplo en Java</h3>
+            <pre class="code">public class Factorial {
+    static long factorial(int n) {
+        if (n &lt; 0 || n &gt; 20) {
+            throw new IllegalArgumentException("Usa n entre 0 y 20");
+        }
+        if (n == 0) return 1; // caso base
+        return n * factorial(n - 1); // caso recursivo
+    }
+
+    public static void main(String[] args) {
+        System.out.println(factorial(5)); // imprime 120
+    }
+}</pre>
+            <p class="muted">Guarda como <code>Factorial.java</code>. Traza: factorial(5) espera a factorial(4), que espera a factorial(3), hasta factorial(0) = 1. Al regresar: 1 × 2 × 3 × 4 × 5 = 120. <code>long</code> admite factorial hasta 20 sin desbordarse.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="fibonacci">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">05 — Ejemplo interactivo</span>
+          <h2>Fibonacci: dos llamadas por nivel</h2>
+          <p class="muted">Cada término es la suma de los dos anteriores: F(0) = 0, F(1) = 1 y F(n) = F(n − 1) + F(n − 2) [4]. Esta versión introductoria ilustra la recursividad, pero repite cálculos; memoizar evita repetirlos.</p>
+        </div>
+        <div class="example">
+          <article class="demo">
+            <h3>Construye la secuencia</h3>
+            <div class="controls">
+              <label for="fibRange">Cantidad de términos: <output id="fibCount">10</output></label>
+              <input id="fibRange" type="range" min="2" max="15" value="10" aria-label="Cantidad de términos Fibonacci">
+            </div>
+            <p id="fibSequence" class="result" aria-live="polite"></p>
+            <div id="fibChart" class="chart" role="img" aria-label="Gráfica de los valores de Fibonacci"></div>
+            <p class="muted">Esta gráfica usa memoización para responder rápidamente; el programa Java recursivo básico aparece al lado.</p>
+          </article>
+          <article class="demo">
+            <h3>Programa recursivo en Java</h3>
+            <pre class="code">public class Fibonacci {
+    static long fibonacci(int n) {
+        if (n &lt; 0 || n &gt; 30) {
+            throw new IllegalArgumentException("Usa n entre 0 y 30");
+        }
+        if (n &lt;= 1) return n; // casos base
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(fibonacci(7)); // imprime 13
+    }
+}</pre>
+            <p class="muted">Guarda como <code>Fibonacci.java</code>. Para n = 7, la respuesta es F(6) + F(5) = 8 + 5 = 13. El límite 30 evita que el ejemplo introductorio tarde demasiado: la versión básica recalcula términos y su tiempo crece exponencialmente. Después se puede optimizar con memoización [4].</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="hanoi">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">06 — Ejemplo interactivo</span>
+          <h2>Torres de Hanói: mover para resolver</h2>
+          <p class="muted">Mueve una torre de discos entre tres postes: solo se mueve un disco a la vez y nunca se coloca uno grande sobre uno pequeño. Para n discos, mueve n − 1 al poste auxiliar, mueve el mayor y vuelve a mover n − 1 [5].</p>
+        </div>
+        <div class="example">
+          <article class="demo">
+            <h3>Observa la solución</h3>
+            <div class="controls">
+              <label for="hanoiRange">Discos: <output id="hanoiCount">3</output></label>
+              <input id="hanoiRange" type="range" min="1" max="6" value="3" aria-label="Número de discos">
+            </div>
+            <div class="hanoi-stage"><svg id="hanoiSvg" viewBox="0 0 480 250" role="img" aria-label="Animación de las torres de Hanói"></svg></div>
+            <p class="hanoi-status" id="hanoiStatus" aria-live="polite"></p>
+            <div class="controls">
+              <button id="hanoiPrev" class="secondary" type="button">← Anterior</button>
+              <button id="hanoiNext" type="button">Siguiente →</button>
+              <button id="hanoiPlay" class="secondary" type="button">Reproducir</button>
+              <button id="hanoiReset" class="secondary" type="button">Reiniciar</button>
+            </div>
+          </article>
+          <article class="demo">
+            <h3>Programa recursivo en Java</h3>
+            <pre class="code">public class TorresDeHanoi {
+    static void mover(int n, char origen,
+                      char destino, char auxiliar) {
+        if (n == 0) return; // caso base
+        mover(n - 1, origen, auxiliar, destino);
+        System.out.println(origen + " -> " + destino);
+        mover(n - 1, auxiliar, destino, origen);
+    }
+
+    public static void main(String[] args) {
+        mover(3, 'A', 'C', 'B');
+    }
+}</pre>
+            <p class="muted">Guarda como <code>TorresDeHanoi.java</code>. Cada línea impresa es un movimiento legal. La regla es: mover n − 1 discos al auxiliar, mover el disco mayor y mover los n − 1 al destino. Para 3 discos se imprimen 7 movimientos; en general, 2ⁿ − 1 [5].</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="fractales">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">07 — Ejemplo gráfico</span>
+          <h2>Fractales: patrones que se repiten</h2>
+          <p class="muted">Un fractal puede construirse repitiendo una regla geométrica a distintas escalas. El triángulo de Sierpiński se genera dividiendo un triángulo en cuatro y repitiendo el proceso en los tres triángulos de las esquinas [6].</p>
+        </div>
+        <div class="example">
+          <article class="demo">
+            <h3>Triángulo de Sierpiński</h3>
+            <div class="controls">
+              <label for="fractalRange">Profundidad: <output id="fractalDepth">5</output></label>
+              <input id="fractalRange" type="range" min="0" max="7" value="5" aria-label="Profundidad del fractal">
+            </div>
+            <div class="canvas-wrap"><canvas id="fractalCanvas" width="720" height="560" aria-label="Dibujo recursivo del triángulo de Sierpiński"></canvas></div>
+            <p id="fractalInfo" class="muted" aria-live="polite"></p>
+          </article>
+          <article class="demo">
+            <h3>Programa gráfico con Java Swing</h3>
+            <pre class="code">import java.awt.*;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import javax.swing.*;
+
+public class Sierpinski extends JPanel {
+    @Override
+    protected void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.setColor(new Color(30, 145, 150));
+        sierpinski(g, new Point2D.Double(360, 20),
+            new Point2D.Double(20, 540),
+            new Point2D.Double(700, 540), 5);
+        g.dispose();
+    }
+
+    static void sierpinski(Graphics2D g,
+            Point2D.Double a, Point2D.Double b,
+            Point2D.Double c, int nivel) {
+        if (nivel == 0) {
+            Path2D figura = new Path2D.Double();
+            figura.moveTo(a.x, a.y);
+            figura.lineTo(b.x, b.y);
+            figura.lineTo(c.x, c.y);
+            figura.closePath();
+            g.fill(figura);
+            return;
+        }
+        Point2D.Double ab = medio(a, b);
+        Point2D.Double bc = medio(b, c);
+        Point2D.Double ca = medio(c, a);
+        sierpinski(g, a, ab, ca, nivel - 1);
+        sierpinski(g, ab, b, bc, nivel - 1);
+        sierpinski(g, ca, bc, c, nivel - 1);
+    }
+
+    static Point2D.Double medio(Point2D.Double p,
+                                Point2D.Double q) {
+        return new Point2D.Double((p.x + q.x) / 2,
+                                  (p.y + q.y) / 2);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame ventana = new JFrame("Triángulo de Sierpiński");
+            ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            ventana.setContentPane(new Sierpinski());
+            ventana.setSize(720, 600);
+            ventana.setVisible(true);
+        });
+    }
+}</pre>
+            <p class="muted">Guarda como <code>Sierpinski.java</code> y ejecútalo con <code>javac Sierpinski.java</code> y <code>java Sierpinski</code>. En cada nivel dibuja tres subtriángulos; por eso la cantidad crece como 3ᵈ. La visualización interactiva de esta página dibuja el mismo patrón en el navegador.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="conclusion">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">08 — Cierre</span>
+          <h2>Una idea pequeña, muchas soluciones</h2>
+          <p class="muted">En Estructura de Datos, la recursividad conecta la definición de un algoritmo con la forma de los datos que procesa. Listas y árboles se pueden recorrer siguiendo sus enlaces o subárboles; la pila de ejecución explica cómo se guardan las llamadas que faltan por terminar. Al dominar los casos base, la reducción, el retorno y el análisis de tiempo y espacio, podemos escribir recorridos correctos y entender cuándo una solución recursiva es más clara —y cuándo conviene reemplazarla por una iterativa para controlar la memoria.</p>
+        </div>
+        <div class="card">
+          <h3>Equipo de trabajo — exactamente 5 integrantes</h3>
+          <p class="muted">Completen los nombres antes de publicar el sitio; no agreguen ni eliminen espacios para mantener el equipo de cinco personas solicitado.</p>
+          <div class="members" aria-label="Lista de cinco integrantes del equipo">
+            <div class="member">
+              <p><b>Integrante 1</b></p>
+              <p>Osvaldo Florencio Mateo. </p>
+            </div>
+            <div class="member">
+              <p><b>Integrante 2</b></p>
+              <p>Alexis Mart&iacute;nez Flores </p>
+            </div>
+            <div class="member">
+              <p><b>Integrante 3</b></p>
+              <p>Marbella Mart&iacute;nez Luis </p>
+            </div>
+            <div class="member">
+              <p><b>Integrante 4</b></p>
+              <p>Omar Mendoza Nicol&aacute;s </p>
+            </div>
+            <div class="member">
+              <p><b>Integrante 5</b></p>
+              <p>Moises Reyes Dolores </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="publicacion">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">10 — Publicación y acceso</span>
+          <h2>Publicar el sitio en GitHub Pages</h2>
+          <p class="muted">Esta carpeta contiene un sitio estático listo para publicarse sin servidor ni dependencias. La plataforma propuesta es GitHub Pages; el enlace público se crea al activar la publicación en un repositorio.</p>
+        </div>
+        <div class="grid-2">
+          <article class="card">
+            <h3>Pasos para obtener el enlace</h3>
+            <ol class="publish-steps">
+              <li>Sube <code>index.html</code> y <code>README.md</code> a la raíz de un repositorio de GitHub.</li>
+              <li>En el repositorio, abre <strong>Settings → Pages</strong>.</li>
+              <li>En <strong>Build and deployment</strong>, selecciona <strong>Deploy from a branch</strong>, la rama <code>main</code> y la carpeta <code>/(root)</code>; guarda los cambios.</li>
+              <li>Cuando termine la publicación, abre el enlace que aparece en esa misma página de configuración y compártelo.</li>
+            </ol>
+            <a href="https://docs.github.com/pages/getting-started-with-github-pages/creating-a-github-pages-site" target="_blank" rel="noopener noreferrer">Guía oficial de GitHub Pages ↗</a>
+          </article>
+          <article class="card">
+            <h3>Formato del enlace público</h3>
+            <p class="muted">El enlace depende del nombre de usuario y del repositorio. Este formato es una plantilla, no una URL activa:</p>
+            <code class="publish-url">https://&lt;usuario&gt;.github.io/&lt;repositorio&gt;/</code>
+            <p class="callout"><strong>Estado:</strong> desde esta carpeta local no se puede confirmar una publicación en línea. Después de activar Pages, reemplaza la plantilla por el enlace que GitHub genere y comprueba que abra sin iniciar sesión.</p>
+            <p class="muted">La página incluye navegación por teclado, enlace para saltar al contenido, controles con etiquetas y mensajes de resultado anunciados a tecnologías de asistencia.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="referencias">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">09 — Fuentes consultadas</span>
+          <h2>Referencias</h2>
+          <p class="muted">Fuentes académicas y técnicas consultadas para las definiciones, recurrencias, estructuras y análisis. Se utilizaron seis fuentes.</p>
+        </div>
+        <ol class="references">
+          <li>[1] P. E. Black, “recursion,” en <em>Dictionary of Algorithms and Data Structures</em>, National Institute of Standards and Technology (NIST), 21 abr. 2022. [En línea]. Disponible: <a href="https://xlinux.nist.gov/dads/HTML/recursion.html">https://xlinux.nist.gov/dads/HTML/recursion.html</a>. [Accedido: 7-oct-2026].</li>
+          <li>[2] T. H. Cormen, C. E. Leiserson, R. L. Rivest y C. Stein, <em>Introduction to Algorithms</em>, 4.ª ed. Cambridge, MA, EE. UU.: MIT Press, 2022.</li>
+          <li>[3] Algorithms and Theory of Computation Handbook, “recurrence relation,” en <em>Dictionary of Algorithms and Data Structures</em>, NIST, 17 dic. 2004. [En línea]. Disponible: <a href="https://xlinux.nist.gov/dads/HTML/recurrence.html">https://xlinux.nist.gov/dads/HTML/recurrence.html</a>. [Accedido: 7-oct-2026].</li>
+          <li>[4] P. Rodgers, “Fibonacci number,” en <em>Dictionary of Algorithms and Data Structures</em>, NIST, 21 abr. 2022. [En línea]. Disponible: <a href="https://xlinux.nist.gov/dads/HTML/fibonacciNumber.html">https://xlinux.nist.gov/dads/HTML/fibonacciNumber.html</a>. [Accedido: 7-oct-2026].</li>
+          <li>[5] P. E. Black, “towers of Hanoi,” en <em>Dictionary of Algorithms and Data Structures</em>, NIST, 21 abr. 2022. [En línea]. Disponible: <a href="https://xlinux.nist.gov/dads/HTML/towersOfHanoi.html">https://xlinux.nist.gov/dads/HTML/towersOfHanoi.html</a>. [Accedido: 7-oct-2026].</li>
+          <li>[6] E. W. Weisstein, “Sierpiński Triangle,” <em>Wolfram MathWorld</em>. [En línea]. Disponible: <a href="https://mathworld.wolfram.com/SierpinskiTriangle.html">https://mathworld.wolfram.com/SierpinskiTriangle.html</a>. [Accedido: 7-oct-2026].</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap foot-inner"><span>Recursividad · Algoritmos y pensamiento computacional</span><a href="#inicio">Volver al inicio ↑</a></div>
+  </footer>
+  <script>
+    "use strict";
+
+    const factorialInput = document.getElementById("factorialInput");
+    const factorialResult = document.getElementById("factorialResult");
+    const factorialSteps = document.getElementById("factorialSteps");
+    function renderFactorial() {
+      const n = Number(factorialInput.value);
+      if (!Number.isInteger(n) || n < 0 || n > 18) {
+        factorialResult.textContent = "Ingresa un entero entre 0 y 18.";
+        factorialSteps.replaceChildren();
+        return;
+      }
+      let value = 1;
+      const values = [];
+      for (let i = n; i > 0; i -= 1) {
+        values.push(i);
+        value *= i;
+      }
+      const descent = values.map((item) => `${item}! → ${item} × ${item - 1}!`);
+      const ascent = [];
+      let subtotal = 1;
+      for (const item of values.slice().reverse()) {
+        ascent.push(`${item} × ${subtotal} = ${item * subtotal}`);
+        subtotal *= item;
+      }
+      const labels = [...descent, "0! = 1", ...ascent];
+      factorialResult.textContent = `${n}! = ${value.toLocaleString("es-MX")}`;
+      factorialSteps.replaceChildren(...labels.map((label, index) => {
+        const span = document.createElement("span");
+        span.className = `step${index === descent.length ? " active" : ""}`;
+        span.textContent = label;
+        return span;
+      }));
+    }
+    document.getElementById("factorialButton").addEventListener("click", renderFactorial);
+    factorialInput.addEventListener("keydown", (event) => { if (event.key === "Enter") renderFactorial(); });
+    factorialInput.addEventListener("change", renderFactorial);
+
+    const fibRange = document.getElementById("fibRange");
+    const fibChart = document.getElementById("fibChart");
+    function renderFibonacci() {
+      const count = Number(fibRange.value);
+      const memo = new Map([[0, 0], [1, 1]]);
+      function fibonacci(n) {
+        if (!memo.has(n)) memo.set(n, fibonacci(n - 1) + fibonacci(n - 2));
+        return memo.get(n);
+      }
+      const sequence = Array.from({ length: count }, (_, index) => fibonacci(index));
+      const max = Math.max(...sequence, 1);
+      document.getElementById("fibCount").textContent = count;
+      document.getElementById("fibSequence").textContent = sequence.join(", ");
+      fibChart.replaceChildren(...sequence.map((value, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "bar-wrap";
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${Math.max(2, value / max * 100)}%`;
+        bar.title = `F(${index}) = ${value}`;
+        const valueLabel = document.createElement("small");
+        valueLabel.className = "bar-value";
+        valueLabel.textContent = value;
+        const label = document.createElement("small");
+        label.textContent = `F(${index})`;
+        wrapper.append(valueLabel, bar, label);
+        return wrapper;
+      }));
+    }
+    fibRange.addEventListener("input", renderFibonacci);
+
+    const hanoiRange = document.getElementById("hanoiRange");
+    const hanoiSvg = document.getElementById("hanoiSvg");
+    const hanoiStatus = document.getElementById("hanoiStatus");
+    let hanoiMoves = [];
+    let hanoiStep = 0;
+    let hanoiTimer = null;
+    let hanoiDisks = 3;
+    function solveHanoi(n, from, to, aux) {
+      if (n === 0) return;
+      solveHanoi(n - 1, from, aux, to);
+      hanoiMoves.push({ from, to, disk: n });
+      solveHanoi(n - 1, aux, to, from);
+    }
+    function drawHanoi() {
+      const pegs = [[], [], []];
+      for (let disk = hanoiDisks; disk >= 1; disk -= 1) pegs[0].push(disk);
+      for (let i = 0; i < hanoiStep; i += 1) {
+        const move = hanoiMoves[i];
+        const disk = pegs[move.from].pop();
+        pegs[move.to].push(disk);
+      }
+      const colors = ["#68e1dc", "#b7a2ff", "#c5ef8b", "#ffbd7a", "#f28db4", "#7eb8ff"];
+      let svg = `<rect width="480" height="250" rx="14" fill="#0c1120"/>`;
+      for (let peg = 0; peg < 3; peg += 1) {
+        const x = 90 + peg * 150;
+        svg += `<rect x="${x - 4}" y="54" width="8" height="156" rx="4" fill="#53607b"/>`;
+        svg += `<rect x="${x - 64}" y="207" width="128" height="9" rx="4" fill="#53607b"/>`;
+        svg += `<text x="${x}" y="237" text-anchor="middle" fill="#aab4cb" font-size="13" font-family="system-ui">${["A", "B", "C"][peg]}</text>`;
+        pegs[peg].forEach((disk, level) => {
+          const width = 35 + disk * 15;
+          const y = 198 - level * 22;
+          svg += `<rect x="${x - width / 2}" y="${y}" width="${width}" height="18" rx="7" fill="${colors[(disk - 1) % colors.length]}"/>`;
+          svg += `<text x="${x}" y="${y + 13}" text-anchor="middle" fill="#101526" font-size="11" font-weight="700" font-family="system-ui">${disk}</text>`;
+        });
+      }
+      hanoiSvg.innerHTML = svg;
+      hanoiStatus.textContent = hanoiStep === hanoiMoves.length
+        ? `¡Resuelto! ${hanoiMoves.length} ${hanoiMoves.length === 1 ? "movimiento" : "movimientos"} (mínimo: 2ⁿ − 1).`
+        : `Movimiento ${hanoiStep} de ${hanoiMoves.length}${hanoiStep ? ` · disco ${hanoiMoves[hanoiStep - 1].disk}: ${["A", "B", "C"][hanoiMoves[hanoiStep - 1].from]} → ${["A", "B", "C"][hanoiMoves[hanoiStep - 1].to]}` : " · posición inicial"}.`;
+      document.getElementById("hanoiPrev").disabled = hanoiStep === 0;
+      document.getElementById("hanoiNext").disabled = hanoiStep === hanoiMoves.length;
+    }
+    function resetHanoi() {
+      if (hanoiTimer !== null) { window.clearInterval(hanoiTimer); hanoiTimer = null; }
+      hanoiDisks = Number(hanoiRange.value);
+      hanoiMoves = [];
+      hanoiStep = 0;
+      solveHanoi(hanoiDisks, 0, 2, 1);
+      document.getElementById("hanoiCount").textContent = hanoiDisks;
+      document.getElementById("hanoiPlay").textContent = "Reproducir";
+      drawHanoi();
+    }
+    hanoiRange.addEventListener("input", resetHanoi);
+    document.getElementById("hanoiNext").addEventListener("click", () => { if (hanoiStep < hanoiMoves.length) hanoiStep += 1; drawHanoi(); });
+    document.getElementById("hanoiPrev").addEventListener("click", () => { if (hanoiStep > 0) hanoiStep -= 1; drawHanoi(); });
+    document.getElementById("hanoiReset").addEventListener("click", resetHanoi);
+    document.getElementById("hanoiPlay").addEventListener("click", (event) => {
+      const playButton = event.currentTarget;
+      if (hanoiTimer !== null) {
+        window.clearInterval(hanoiTimer);
+        hanoiTimer = null;
+        playButton.textContent = "Reproducir";
+        return;
+      }
+      if (hanoiStep === hanoiMoves.length) hanoiStep = 0;
+      playButton.textContent = "Pausar";
+      drawHanoi();
+      hanoiTimer = window.setInterval(() => {
+        if (hanoiStep >= hanoiMoves.length) {
+          window.clearInterval(hanoiTimer);
+          hanoiTimer = null;
+          playButton.textContent = "Reproducir";
+          return;
+        }
+        hanoiStep += 1;
+        drawHanoi();
+      }, 650);
+    });
+
+    const fractalCanvas = document.getElementById("fractalCanvas");
+    const fractalContext = fractalCanvas.getContext("2d");
+    const fractalRange = document.getElementById("fractalRange");
+    function drawTriangle(a, b, c, depth) {
+      if (depth === 0) {
+        fractalContext.beginPath();
+        fractalContext.moveTo(...a);
+        fractalContext.lineTo(...b);
+        fractalContext.lineTo(...c);
+        fractalContext.closePath();
+        fractalContext.fill();
+        return;
+      }
+      const midpoint = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      const ab = midpoint(a, b);
+      const bc = midpoint(b, c);
+      const ca = midpoint(c, a);
+      drawTriangle(a, ab, ca, depth - 1);
+      drawTriangle(ab, b, bc, depth - 1);
+      drawTriangle(ca, bc, c, depth - 1);
+    }
+    function renderFractal() {
+      const depth = Number(fractalRange.value);
+      const width = fractalCanvas.width;
+      fractalContext.clearRect(0, 0, width, fractalCanvas.height);
+      fractalContext.fillStyle = "#68e1dc";
+      drawTriangle([width / 2, 24], [24, fractalCanvas.height - 24], [width - 24, fractalCanvas.height - 24], depth);
+      document.getElementById("fractalDepth").textContent = depth;
+      document.getElementById("fractalInfo").textContent = `${3 ** depth} triángulo${depth === 0 ? "" : "s"} mínimo${depth === 0 ? "" : "s"} en profundidad ${depth}.`;
+    }
+    fractalRange.addEventListener("input", renderFractal);
+
+    renderFactorial();
+    renderFibonacci();
+    resetHanoi();
+    renderFractal();
+  </script>
+</body>
+</html>
